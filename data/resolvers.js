@@ -1,9 +1,18 @@
-import { Friends } from './db-connectors'
+import { Friends, Aliens } from './db-connectors'
+import { reject } from 'lodash';
 
-export const resolvers = {
+const resolvers = {
     Query: {
-        getFriend: ({ id }) => {
-            return new Friend(id, friendDatabase[id]);
+        getFriend: (root, { id }) => {
+            return new Promise((resolve, object) => {
+                Friends.findById(id, (err, friend) => {
+                    if (err) reject(err);
+                    else resolve(friend);
+                });
+            });
+        },
+        getAliens: () => {
+            return Aliens.findAll();
         },
     },
     Mutation: {
@@ -27,5 +36,23 @@ export const resolvers = {
                 });
             });
         },
+        updateFriend: (root, { input }) => {
+            return new Promise((resolve, object) => {
+                Friends.findOneAndUpdate({ _id: input.id }, input, { new: true }, (err, friend) => {
+                    if (err) reject(err);
+                    else resolve(friend);
+                });
+            });
+        },
+        deleteFriend: (root, { id }) => {
+            return new Promise((resolve, object) => {
+                Friends.remove({ _id: id }, (err) => {
+                    if (err) reject(err);
+                    else (resolve('Successfully deleted friend'));
+                });
+            });
+        }
     },
 };
+
+export { resolvers };
